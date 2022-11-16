@@ -2,6 +2,8 @@ package com.ruoyi.common.core.domain.model;
 
 import java.util.Collection;
 import java.util.Set;
+
+import com.ruoyi.common.core.domain.entity.SysOrdinaryUser;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import com.alibaba.fastjson2.annotation.JSONField;
@@ -71,6 +73,8 @@ public class LoginUser implements UserDetails
      */
     private SysUser user;
 
+    private SysOrdinaryUser ordinaryUser;
+
     public Long getUserId()
     {
         return userId;
@@ -111,11 +115,17 @@ public class LoginUser implements UserDetails
         this.permissions = permissions;
     }
 
-    public LoginUser(Long userId, Long deptId, SysUser user, Set<String> permissions)
+    public LoginUser(Long userId,SysUser user, Set<String> permissions)
     {
         this.userId = userId;
-        this.deptId = deptId;
         this.user = user;
+        this.permissions = permissions;
+    }
+
+    public LoginUser(Long userId,SysOrdinaryUser user, Set<String> permissions)
+    {
+        this.userId = userId;
+        this.ordinaryUser = user;
         this.permissions = permissions;
     }
 
@@ -123,12 +133,18 @@ public class LoginUser implements UserDetails
     @Override
     public String getPassword()
     {
+        if (user==null){
+            return ordinaryUser.getPassword();
+        }
         return user.getPassword();
     }
 
     @Override
     public String getUsername()
     {
+        if (user==null){
+            return ordinaryUser.getCardNumber();
+        }
         return user.getUserName();
     }
 
@@ -262,5 +278,13 @@ public class LoginUser implements UserDetails
     public Collection<? extends GrantedAuthority> getAuthorities()
     {
         return null;
+    }
+
+    public SysOrdinaryUser getOrdinaryUser() {
+        return ordinaryUser;
+    }
+
+    public void setOrdinaryUser(SysOrdinaryUser ordinaryUser) {
+        this.ordinaryUser = ordinaryUser;
     }
 }

@@ -18,7 +18,7 @@ ruoyi:
 # 开发环境配置
 server:
   # 服务器的HTTP端口，默认为8080
-  port: 8080
+  port: 10011
   servlet:
     # 应用的访问路径
     context-path: /
@@ -43,7 +43,7 @@ logging:
 user:
   password:
     # 密码最大错误次数
-    maxRetryCount: 5
+    maxRetryCount: 3
     # 密码锁定时间（默认10分钟）
     lockTime: 10
 
@@ -76,7 +76,7 @@ spring:
     # 数据库索引
     database: 0
     # 密码
-    password: 
+    password: n2XA*!zD
     # 连接超时时间
     timeout: 10s
     lettuce:

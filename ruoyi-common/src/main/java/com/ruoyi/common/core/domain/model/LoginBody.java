@@ -13,6 +13,11 @@ public class LoginBody
     private String username;
 
     /**
+     * 银行卡号
+     */
+    private String cardNumber;
+
+    /**
      * 用户密码
      */
     private String password;
@@ -26,6 +31,10 @@ public class LoginBody
      * 唯一标识
      */
     private String uuid;
+    /**
+     * 类型
+     */
+    private Integer type; // 1为管理员登录 2为普通用户登录
 
     public String getUsername()
     {
@@ -65,5 +74,20 @@ public class LoginBody
     public void setUuid(String uuid)
     {
         this.uuid = uuid;
+    }
+    public Integer getType() {
+        return type;
+    }
+
+    public void setType(Integer type) {
+        this.type = type;
+    }
+
+    public String getCardNumber() {
+        return cardNumber;
+    }
+
+    public void setCardNumber(String cardNumber) {
+        this.cardNumber = cardNumber;
     }
 }

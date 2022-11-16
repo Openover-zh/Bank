@@ -1,6 +1,8 @@
 package com.ruoyi.framework.web.service;
 
 import java.util.concurrent.TimeUnit;
+
+import com.ruoyi.common.core.domain.entity.SysOrdinaryUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
@@ -66,6 +68,40 @@ public class SysPasswordService
         }
 
         if (!matches(user, password))
+        {
+            retryCount = retryCount + 1;
+            AsyncManager.me().execute(AsyncFactory.recordLogininfor(username, Constants.LOGIN_FAIL,
+                    MessageUtils.message("user.password.retry.limit.count", retryCount)));
+            redisCache.setCacheObject(getCacheKey(username), retryCount, lockTime, TimeUnit.MINUTES);
+            throw new UserPasswordNotMatchException();
+        }
+        else
+        {
+            clearLoginRecordCache(username);
+        }
+    }
+
+    public void validate(SysOrdinaryUser user)
+    {
+        Authentication usernamePasswordAuthenticationToken = AuthenticationContextHolder.getContext();
+        String username = usernamePasswordAuthenticationToken.getName();
+        String password = usernamePasswordAuthenticationToken.getCredentials().toString();
+
+        Integer retryCount = redisCache.getCacheObject(getCacheKey(username));
+
+        if (retryCount == null)
+        {
+            retryCount = 0;
+        }
+
+        if (retryCount >= Integer.valueOf(maxRetryCount).intValue())
+        {
+            AsyncManager.me().execute(AsyncFactory.recordLogininfor(username, Constants.LOGIN_FAIL,
+                    MessageUtils.message("user.password.retry.limit.exceed", maxRetryCount, lockTime)));
+            throw new UserPasswordRetryLimitExceedException(maxRetryCount, lockTime);
+        }
+
+        if (!SecurityUtils.matchesPassword(password, user.getPassword()))
         {
             retryCount = retryCount + 1;
             AsyncManager.me().execute(AsyncFactory.recordLogininfor(username, Constants.LOGIN_FAIL,

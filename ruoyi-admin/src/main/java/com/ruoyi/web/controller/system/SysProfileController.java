@@ -1,5 +1,7 @@
 package com.ruoyi.web.controller.system;
 
+import com.ruoyi.common.core.domain.entity.SysOrdinaryUser;
+import com.ruoyi.system.service.ISysOrdinaryUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -38,6 +40,8 @@ public class SysProfileController extends BaseController
 
     @Autowired
     private TokenService tokenService;
+    @Autowired
+    private ISysOrdinaryUserService ordinaryUserService;
 
     /**
      * 个人信息
@@ -47,9 +51,16 @@ public class SysProfileController extends BaseController
     {
         LoginUser loginUser = getLoginUser();
         SysUser user = loginUser.getUser();
+        if (user==null){
+            SysOrdinaryUser ordinaryUser = loginUser.getOrdinaryUser();
+            AjaxResult ajax = AjaxResult.success(ordinaryUser);
+            ajax.put("roleGroup", "普通角色");
+            ajax.put("postGroup", "");
+            return ajax;
+        }
         AjaxResult ajax = AjaxResult.success(user);
         ajax.put("roleGroup", userService.selectUserRoleGroup(loginUser.getUsername()));
-        ajax.put("postGroup", userService.selectUserPostGroup(loginUser.getUsername()));
+        ajax.put("postGroup", "");
         return ajax;
     }
 
@@ -62,6 +73,9 @@ public class SysProfileController extends BaseController
     {
         LoginUser loginUser = getLoginUser();
         SysUser sysUser = loginUser.getUser();
+        if (sysUser==null){
+            return error("修改个人信息异常，请联系管理员");
+        }
         user.setUserName(sysUser.getUserName());
         if (StringUtils.isNotEmpty(user.getPhonenumber())
                 && UserConstants.NOT_UNIQUE.equals(userService.checkPhoneUnique(user)))
@@ -76,7 +90,6 @@ public class SysProfileController extends BaseController
         user.setUserId(sysUser.getUserId());
         user.setPassword(null);
         user.setAvatar(null);
-        user.setDeptId(null);
         if (userService.updateUserProfile(user) > 0)
         {
             // 更新缓存用户信息
@@ -108,13 +121,22 @@ public class SysProfileController extends BaseController
         {
             return error("新密码不能与旧密码相同");
         }
-        if (userService.resetUserPwd(userName, SecurityUtils.encryptPassword(newPassword)) > 0)
-        {
-            // 更新缓存用户密码
-            loginUser.getUser().setPassword(SecurityUtils.encryptPassword(newPassword));
+        if (loginUser.getUser()==null){
+            SysOrdinaryUser ordinaryUser = loginUser.getOrdinaryUser();
+            ordinaryUser.setPassword(SecurityUtils.encryptPassword(newPassword));
+            ordinaryUserService.resetPwd(ordinaryUser);
             tokenService.setLoginUser(loginUser);
             return success();
+        }else {
+            if (userService.resetUserPwd(userName, SecurityUtils.encryptPassword(newPassword)) > 0)
+            {
+                // 更新缓存用户密码
+                loginUser.getUser().setPassword(SecurityUtils.encryptPassword(newPassword));
+                tokenService.setLoginUser(loginUser);
+                return success();
+            }
         }
+
         return error("修改密码异常，请联系管理员");
     }
 

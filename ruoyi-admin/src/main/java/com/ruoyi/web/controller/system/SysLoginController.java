@@ -1,7 +1,11 @@
 package com.ruoyi.web.controller.system;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import com.ruoyi.common.core.domain.entity.SysOrdinaryUser;
+import com.ruoyi.system.service.ISysRoleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -33,6 +37,8 @@ public class SysLoginController
 
     @Autowired
     private SysPermissionService permissionService;
+    @Autowired
+    private ISysRoleService roleService;
 
     /**
      * 登录方法
@@ -44,9 +50,14 @@ public class SysLoginController
     public AjaxResult login(@RequestBody LoginBody loginBody)
     {
         AjaxResult ajax = AjaxResult.success();
-        // 生成令牌
-        String token = loginService.login(loginBody.getUsername(), loginBody.getPassword(), loginBody.getCode(),
-                loginBody.getUuid());
+        String token = "";
+        if (loginBody.getType()==1){
+            // 生成令牌
+             token = loginService.login(loginBody.getUsername(), loginBody.getPassword(), loginBody.getCode(),
+                    loginBody.getUuid());
+        }else {
+            token = loginService.login(String.valueOf(loginBody.getCardNumber()),loginBody.getPassword(),loginBody.getCode(),loginBody.getUuid());
+        }
         ajax.put(Constants.TOKEN, token);
         return ajax;
     }
@@ -60,14 +71,24 @@ public class SysLoginController
     public AjaxResult getInfo()
     {
         SysUser user = SecurityUtils.getLoginUser().getUser();
+        if (user==null){
+            SysOrdinaryUser ordinaryUser = SecurityUtils.getLoginUser().getOrdinaryUser();
+            Set<String> permissions = permissionService.getMenuPermission(ordinaryUser);
+            AjaxResult ajax = AjaxResult.success();
+            ajax.put("user", ordinaryUser);
+            ajax.put("roles",roleService.selectRolePermissionByUserId(ordinaryUser.getUserId()));
+            ajax.put("permissions", permissions);
+            return ajax;
+        }
         // 角色集合
         Set<String> roles = permissionService.getRolePermission(user);
         // 权限集合
-        Set<String> permissions = permissionService.getMenuPermission(user);
+        Set<String> perms = new HashSet<>();
+        perms.add("*:*:*");
         AjaxResult ajax = AjaxResult.success();
         ajax.put("user", user);
         ajax.put("roles", roles);
-        ajax.put("permissions", permissions);
+        ajax.put("permissions", perms);
         return ajax;
     }
 
