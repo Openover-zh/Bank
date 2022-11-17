@@ -56,4 +56,18 @@ public enum BusinessType
      * 清空数据
      */
     CLEAN,
+    /**
+     * 充值
+     */
+    RECHARGE,
+
+    /**
+     * 提取
+     */
+    EXTRACT,
+
+    /**
+     * 转账
+     */
+    TRANSFER
 }

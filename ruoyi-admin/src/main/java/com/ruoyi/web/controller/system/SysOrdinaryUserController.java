@@ -178,7 +178,7 @@ public class SysOrdinaryUserController extends BaseController
      * @return
      */
     @PreAuthorize("@ss.hasPermi('system:user:edit')")
-    @Log(title = "用户管理",businessType = BusinessType.UPDATE)
+    @Log(title = "用户管理",businessType = BusinessType.RECHARGE)
     @PutMapping("/balance/recharge")
     public AjaxResult balanceRecharge(@RequestBody SysOrdinaryUser user){
         BigDecimal rechargeBalance = user.getBalance();
@@ -203,7 +203,7 @@ public class SysOrdinaryUserController extends BaseController
      * @return
      */
     @PreAuthorize("@ss.hasPermi('system:user:edit')")
-    @Log(title = "用户管理",businessType = BusinessType.UPDATE)
+    @Log(title = "用户管理",businessType = BusinessType.TRANSFER)
     @PutMapping("/balance/transfer")
     @Transactional
     public AjaxResult balanceTransfer(@RequestBody SysOrdinaryUser user){
@@ -240,7 +240,7 @@ public class SysOrdinaryUserController extends BaseController
      * @return
      */
     @PreAuthorize("@ss.hasPermi('system:user:edit')")
-    @Log(title = "用户管理",businessType = BusinessType.UPDATE)
+    @Log(title = "用户管理",businessType = BusinessType.EXTRACT)
     @PutMapping("/balance/extraction")
     public AjaxResult balanceExtraction(@RequestBody SysOrdinaryUser user){
         BigDecimal rechargeBalance = user.getBalance();
