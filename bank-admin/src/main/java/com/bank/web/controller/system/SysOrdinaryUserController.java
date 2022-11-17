@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
 /**
  * 用户信息
  * 
- * @author ruoyi
+ * @author Gong
  */
 @RestController
 @RequestMapping("/system/user")
@@ -208,10 +208,13 @@ public class SysOrdinaryUserController extends BaseController
     @Transactional
     public AjaxResult balanceTransfer(@RequestBody SysOrdinaryUser user){
         BigDecimal transferBalance = user.getBalance();
+        SysOrdinaryUser ordinaryUser = userService.selectUserById(user.getUserId());
+        if (user.getCardNumber().equals(ordinaryUser.getCardNumber())){
+            return error("不可以给自己转账");
+        }
         if (transferBalance ==null || transferBalance.equals(BigDecimal.ZERO)){
             return error("转账金额不能为空或0");
         }
-        SysOrdinaryUser ordinaryUser = userService.selectUserById(user.getUserId());
         BigDecimal b1 = ordinaryUser.getBalance();
         if (b1.compareTo(transferBalance)<0){
             return error("账户余额不足！");
